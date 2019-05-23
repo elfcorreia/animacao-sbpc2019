@@ -1,0 +1,192 @@
+<html>
+<body style="display: flex;">
+
+<div id="inicio" style="display: none;">
+	<h1>Titulo</h1>
+
+	<div>Desafio</div>
+	<div>O que há por trás</div>
+</div>
+
+<div id="desafio" style="display: flex;">
+	<canvas id="c" style="border: dashed 1pt gray; width: 100%;"></canvas>
+	<div style="display: flex; flex-direction: column;">
+		<div style="text-align: center;">
+			<p>Inteligência Artifical</p>
+			<img src="assets/img/back.png" style="height: 180px;">
+		</div>		
+		<div style="margin-top: 20px; text-align: center;">
+			<img src="assets/img/back.png" style="height: 180px;">
+			<p>Sua aposta</p>
+			<button>Há resposta</button>
+			<button>Não há resposta</button>			
+		</div>
+	</div>
+</div>
+
+</body>
+	<script type="text/javascript" src="assets/js/fabric.min.js"></script>
+	<script type="text/javascript">
+		class Scene {
+			constructor(canvas_element_id) {
+				this.canvas = new fabric.StaticCanvas(canvas_element_id, {
+					//backgroundColor: 'rgb(174,9,13)',
+					backgroundImage: 'assets/img/background.jpg',
+					width: 800,
+					height: 480
+				});
+				this.defense_radius = 30
+				this.backgroundObject
+				this.create_defense_cells()
+				this.create_strange_body()
+				setInterval(this.animate.bind(this), 60)
+			}
+
+			create_defense_cells() {
+				this.defense_cells = Array()
+				this.defense_cells_momentum = Array()
+				for (var i=0; i < 10; i++) {
+					var b = new fabric.Circle({
+						fill: 'rgba(255, 255, 255, 0.5)',
+						radius: this.defense_radius,
+						alpha: 0.9,
+						left: Math.random() * this.canvas.width - this.defense_radius/2,
+						top: Math.random() * this.canvas.height - this.defense_radius/2,
+					});
+					this.defense_cells.push(b);
+					this.canvas.add(b);
+
+					(Math.random() > 0.5 ? 1 : -1)
+					this.defense_cells_momentum.push({
+						x: (1 + Math.random()) * (Math.random() > 0.5 ? 1 : -1), 
+						y: (1 + Math.random()) * (Math.random() > 0.5 ? 1 : -1)
+					})
+				}
+
+				this.limit_left = this.canvas.width - this.defense_radius*2
+				this.limit_top = this.canvas.height - this.defense_radius*2
+				let collision_distance_limit = this.defense_radius*2
+				this.collision_distance_limit_squared = collision_distance_limit*collision_distance_limit
+			}
+
+			create_strange_body() {
+				let x = Math.floor(this.canvas.width / 2)
+				let y = Math.floor(this.canvas.height / 2)
+				this.strange_body = new fabric.Path('M 10 10 L 30 30 L 50 20 L 10 0 z')
+				this.strange_body.set({
+					fill: 'green',
+					stroke: 'blue', 
+					opacity: .9,
+					left: x,
+					top: y
+				});
+				this.canvas.add(this.strange_body)
+			}
+
+			animate() {
+				//this.animate_defense_cells_particle();
+				this.animate_defense_cells();
+				this.canvas.renderAll();
+			}
+
+			animate_defense_cells_particle() {
+				let self = this
+				this.defense_cells.forEach(function(item) {
+					let dx = Math.floor(Math.random()*3 - 1)
+					var nleft = item.left + dx
+					nleft = nleft > self.limit_left ? nleft - 2*dx : nleft
+					nleft = nleft < 0 ? nleft + 2*dx : nleft
+					
+					let dy = Math.floor(Math.random()*3 - 1)
+					var ntop = item.top + dy
+					ntop = ntop > self.limit_top ? ntop - 2*dx : ntop
+					ntop = ntop < 0 ? ntop + 2*dx : ntop
+
+					item.set({left: nleft, top: ntop});
+				});
+			}
+
+			check_collission_squared(a, b, index) {
+				let ax = a.left + a.radius
+				let ay = a.top + a.radius
+				let bx = b.left + b.radius
+				let by = b.top + b.radius
+
+				let dx = bx - ax
+				let dy = by - ay
+
+				// update direction
+				// this.defense_cells_momentum[index].x = dx > 0 ? 1 : -1
+				// this.defense_cells_momentum[index].y = dy > 0 ? 1 : -1
+
+				let d_squared = dx*dx + dy*dy
+				console.log(d_squared, this.collision_distance_limit_squared)				
+				return d_squared < this.collision_distance_limit_squared
+			}
+
+			check_collission(a, b) {
+				return a.left < b.left + b.radius
+											&& a.left + a.width > b.left 
+											&& a.top < b.top + b.height 
+											&& a.top + a.height > b.top
+			}
+
+			animate_defense_cells() {				
+				let self = this
+				this.defense_cells.forEach(function(item, index, array) {
+					if (Math.random() < 0.5) {
+						// keep stopped
+						return;
+					}
+					var dx = self.defense_cells_momentum[index].x
+					var dy = self.defense_cells_momentum[index].y
+					
+					let decision = Math.random()
+					if (decision < 0.95) {
+						// keep the movement
+					} else {
+						if (Math.random() < 0.5) {
+							self.defense_cells_momentum[index].x *= -1
+							dx = self.defense_cells_momentum[index].x
+						}
+						if (Math.random() < 0.5) {
+							self.defense_cells_momentum[index].y *= -1
+							dy = self.defense_cells_momentum[index].y
+						}
+					}
+
+					// invert x direction if in the right
+					let px = item.left + dx
+					if (px < 0 || px > self.limit_left) {
+						self.defense_cells_momentum[index].x *= -1
+						dx = self.defense_cells_momentum[index].x
+					}
+
+					// invert y direction if hit frontier
+					let py = item.top + dy
+					if (py < 0 || py < self.limit_top) {
+						self.defense_cells_momentum[index].y *= -1
+						dy = self.defense_cells_momentum[index].y
+					}
+
+					for (var i in array) {						
+						if (item != array[i]) {
+							if (self.check_collission_squared(item, array[i], i)) {
+								self.defense_cells_momentum[index].x *= -1
+								dx = self.defense_cells_momentum[index].x
+
+								self.defense_cells_momentum[index].y *= -1
+								dy = self.defense_cells_momentum[index].y
+								break
+							}
+						}
+					}
+
+					item.set({left: item.left + dx, top: item.top + dy});
+				});
+			}
+		}
+
+		var scene = new Scene("c");
+	</script>
+</html>
