@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Hello World</title>
+  <style></style>
+</head>
+  
+<body>
+	<!--
+		https://www.ibiology.org/immunology/cells-immune-system/
+	-->
+<!--
+	<div>Icons made by <a href="https://www.freepik.com/?__hstc=57440181.11e3a8c30d32a578b2bf4acfc3aeb08e.1560947566399.1560947566399.1560947566399.1&__hssc=57440181.4.1560947566400&__hsfp=1110192581" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/"                 title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/"                 title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+-->
+<!--	<div style="display: flex; border: solid 1pt red;" >!-->
+<!--		<div id="game">			-->
+<!--		</div>-->
+<!--		<div id="sidebar" style="display: flex; flex-grow: 2; flex-direction: column; text-align: center;">-->
+<!--			<div>-->
+<!--				Inteligência Artificial-->
+<!--			</div>-->
+<!--			<div>-->
+<!--				<img src="assets/img/back.png" style="width: 100px;">-->
+<!--			</div>-->
+<!--			<div style="flex-grow: 2; display: flex; align-items: center; border: solid 1pt blue;">-->
+<!--				<div style="font-family: Futura; font-size: 14pt; border: solid 1pt green;">-->
+<!--					GATACA-->
+<!--				</div>-->
+<!--			</div>-->
+<!--			<div>-->
+<!--				<img src="assets/img/back.png" style="width: 100px;">-->
+<!--			</div>-->
+<!--			<div>Você</div>-->
+<!--		</div>-->
+	</div>
+	<script src="assets/js/pixi.js"></script>
+	<script src="assets/js/game.js"></script>
+
+  <script type="text/javascript">
+  	
+  	let game = new Game();
+  	game.init(document.body);
+  	game.mainLoop();  	
+
+//    let bac_cells = new Array();
+//    let imuno_cells = new Array();
+//    let blood_cells = new Array();
+//
+//    function state(delta) {
+//    	play(delta);
+//    }
+//
+//    function play(delta) {
+//    	let bac_and_imuno_cells = bac_cells.concat(imuno_cells);
+//
+//    	for (let k in bac_and_imuno_cells) {
+//    		// check bounds
+	    	//let hitswall = contain(bac_and_imuno_cells[k], {x: 0, y: 0, width: app.renderer.view.width, height: app.renderer.view.height});
+//
+//	    	// change direction
+//	    	if (hitswall === "bottom" || hitswall === "top") {
+//	    		bac_and_imuno_cells[k].vy *= -1;
+//	    	} else if (hitswall === "left" || hitswall === "right") {
+//	    		bac_and_imuno_cells[k].vx *= -1;
+//	    	}
+//
+//	    	// check collission
+//	    	for (let kk in bac_and_imuno_cells) {
+//	    		if (k === kk) {
+//	    			continue;
+//	    		}
+//	    		if (check_collission(bac_and_imuno_cells[k], bac_and_imuno_cells[kk])) {
+//	    			if (Math.random() < 0.5) {
+//	    				bac_and_imuno_cells[k].vx *= -1;
+//	    				bac_and_imuno_cells[k].vy *= -1;
+//	    			}
+//	    		}
+//	    	}
+//
+//	    	bac_and_imuno_cells[k].x += bac_and_imuno_cells[k].vx;
+//	    	bac_and_imuno_cells[k].y += bac_and_imuno_cells[k].vy;
+//	    }
+//    }
+ //
+//    function setup_map() {
+//		for (let i=0; i < 40; i++) {			
+//			setup_random_cell(blood_resources, blood_cells);
+//		}
+//
+//		for (let i=0; i<5; i++) {			
+//			setup_random_cell(imuno_resources, imuno_cells);
+//		}
+//
+//		bac_texture = bac_resources[randomInt(0, bac_resources.length - 1)];
+//		for (let i=0; i < 20; i++) {
+//			setup_cell(bac_texture, bac_cells);
+//		}
+//    }
+//
+//    function setup_sidebar() {
+//
+//    }
+//
+//	function setup() {
+//		setup_map();
+//		setup_sidebar();
+//		app.ticker.add(state);
+//	}
+//
+//	let all_resources = bac_resources.concat(imuno_resources.concat(blood_resources));
+//	PIXI.loader.add(all_resources).load(setup);
+  </script>
+</body>
+</html>
