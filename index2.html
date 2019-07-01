@@ -39,7 +39,23 @@
 
   <script type="text/javascript">
   	
-  	let game = new Game();
+    let gameOptions = {
+      width: 1200, 
+      height: 600,
+      play: {
+        x: 0, 
+        y: 0, 
+        width: 800, 
+        height: 600 
+      },
+      sidemap: {
+        x: 800, 
+        y: 0, 
+        width: 400, 
+        height: 600
+      }
+    }
+  	let game = new Game(gameOptions);
   	game.init(document.body);
   	game.mainLoop();  	
 
