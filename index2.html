@@ -35,6 +35,7 @@
 <!--		</div>-->
 	</div>
 	<script src="assets/js/pixi.js"></script>
+  <script src="assets/js/utils.js"></script>
 	<script src="assets/js/game.js"></script>
 
   <script type="text/javascript">
@@ -53,8 +54,39 @@
         y: 0, 
         width: 400, 
         height: 600
-      }
-    }
+      },
+      resources: {
+        bacteria: [
+          "assets/img/bac_frame.png",
+          //"assets/img/bac2.png",
+          //"assets/img/bac3.png",
+          //"assets/img/bac4.png",
+          //"assets/img/bac5.png",
+          ],
+          imuno: [    
+          "assets/img/imuno_frame.png",
+          //"assets/img/imuno2.png",
+          //"assets/img/imuno3.png",
+          //"assets/img/imuno4.png",
+        ],
+        blood: [
+            "assets/img/blood1.png"
+          ],
+          "sidemap_background": [
+            "assets/img/sidemap_background.png"
+          ],
+          "players": [
+            "assets/img/algorithm.png",
+            "assets/img/brain.png",
+          ],
+          "cards": [
+            "assets/img/back.png",
+            "assets/img/card_sick.png",
+            "assets/img/card_good.png",
+          ]
+      },
+    };
+
   	let game = new Game(gameOptions);
   	game.init(document.body);
   	game.mainLoop();  	

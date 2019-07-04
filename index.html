@@ -1,14 +1,25 @@
 <html>
-<body style="display: flex;">
-
-<div id="inicio" style="display: none;">
+<head>
+	<link rel="stylesheet" type="text/css" href="assets/css/style.css">
+</head>
+<body style="display: flex; text-align: center;">
+<div id="inicio" class="center">
 	<h1>Titulo</h1>
 
-	<div>Desafio</div>
-	<div>O que há por trás</div>
+	<div>
+		<div class="btn orange">
+			O que há por trás
+		</div>
+		<div class="btn orange">
+			Desafio
+		</div>
+	</div>
 </div>
 
-<div id="desafio" style="display: flex;">
+<div id="slides" class="center">
+</div>
+
+<div id="game" class="center" style="display: flex;">
 	<canvas id="c" style="border: dashed 1pt gray; width: 100%;"></canvas>
 	<div style="display: flex; flex-direction: column;">
 		<div style="text-align: center;">
@@ -26,7 +37,38 @@
 
 </body>
 	<script type="text/javascript" src="assets/js/fabric.min.js"></script>
+	<script type="text/javascript" src="assets/js/utils.js"></script>
 	<script type="text/javascript">
+		
+		class Manager {
+			constructor() {
+				this.inicio = document.getElementById("inicio")
+				this.slides = document.getElementById("slides")
+				this.game = document.getElementById("game")								
+				
+				this.switcher = new Switcher([
+					this.inicio, this.slides, this.game
+				])
+
+				this.switcher.switchTo(this.inicio)				
+			}
+		}
+
+		class Switcher {
+
+			constructor(elements) {
+				this.els = elements
+			}
+
+			switchTo(el) {
+				this.els.forEach(function(item) {
+					item.classList.remove(item == el ? "hidden": "shown")
+					item.classList.add(item == el ? "shown": "hidden")
+				})
+			}
+
+		}
+
 		class Scene {
 			constructor(canvas_element_id) {
 				this.canvas = new fabric.StaticCanvas(canvas_element_id, {
@@ -45,7 +87,7 @@
 			create_defense_cells() {
 				this.defense_cells = Array()
 				this.defense_cells_momentum = Array()
-				for (var i=0; i < 10; i++) {
+				for (var i=0; i < 10; i++) {					
 					var b = new fabric.Circle({
 						fill: 'rgba(255, 255, 255, 0.5)',
 						radius: this.defense_radius,
@@ -187,6 +229,7 @@
 			}
 		}
 
-		var scene = new Scene("c");
+		// var scene = new Scene("c");
+		var manager = new Manager();		
 	</script>
 </html>
