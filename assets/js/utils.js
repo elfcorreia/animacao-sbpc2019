@@ -27,38 +27,29 @@ function is_touching(obj1, obj2) {
 }
 
 function contain(obj, rect) {
-	let collision = undefined;
-
 	let radius = obj.width;	
 	let center_x = obj.x + radius;
 	let center_y = obj.y + radius;
 
 	//Left
 	if (Math.abs(rect.x - center_x) <= radius) {
-		obj.x = rect.x;
-		collision = "left";
+		obj.vx *= -1;
 	}
 
 	//Top
 	if (Math.abs(rect.y - center_y) <= radius) {
-		obj.y = rect.y;
-		collision = "top";
+		obj.vy *= -1;
 	}
 
 	//Right
 	if (obj.x + radius >= rect.width) {
-		obj.x = rect.width - radius;
-		collision = "right";
+		obj.vx *= -1;
 	}
 
 	//Bottom
 	if (obj.y + radius >= rect.height) {
-		obj.y = rect.height - radius;
-		collision = "bottom";
+		obj.vy *= -1;
 	}
-
-	//Return the `collision` value
-	return collision;
 }
 
 function check_collission(a, b) {
@@ -181,4 +172,45 @@ function pick_a_empty_place_near(obj, objs, radius) {
 		tries -= 1;
 		radius -= radius_decay;
 	}
+}
+
+function avoid_collisions(objs) {
+	for (let i in objs) {		
+		for (let j in objs) {
+			if (i === j) {
+				continue;
+			}
+			if (is_touching(objs[i], objs[j])) {
+				let sx = randomSignal();
+				let sy = randomSignal();
+				objs[i].vx *= sx;
+				objs[i].vy *= sy;
+				objs[j].vx *= -sx;
+				objs[j].vy *= -sy;
+			}
+		}
+	}		    	
+}
+
+function sort_by_nearest(obj, objs) {	
+	let aux = objs.slice();
+	aux.sort(function (obj1, obj2) {
+		let dx1 = (obj.x + obj.width/2) - (obj1.x + obj1.width/2);
+		let dy1 = (obj.y + obj.height/2) - (obj1.y + obj1.height/2);
+		let d1 = dx1*dx1 + dy1*dy1;
+
+		let dx2 = (obj.x + obj.width/2) - (obj2.x + obj2.width/2);
+		let dy2 = (obj.y + obj.height/2) - (obj2.y + obj2.height/2);
+		let d2 = dx2*dx2 + dy2*dy2;
+		
+		if (d1 < d2) {
+			return -1;
+		} else if (d1 === d2) {
+			return 0;
+		} else {
+			return 1;
+		}
+	});
+	console.log("nearest", obj.id, aux[0].id);
+	return aux;
 }
