@@ -1,10 +1,60 @@
-function PlayEngine(stage, opt) {
+class BaseEngine {
 
-	this.strategy = new PlayStrategy();
-	this.stage = stage;
-	this.opt = opt;
+	constructor(el, opt) {
+		this.opt = opt;
 
-	this.onSetup = function () {
+		console.log("initializing pixi...")
+		if (!PIXI.utils.isWebGLSupported()) {
+	      type = "canvas"
+	    }
+	    PIXI.utils.sayHello("WebGL")
+	    this.app = new PIXI.Application({
+	    	antialias: true,
+	    	forceCanvas: true,    
+	    });
+	    //this.app.renderer.backgroundColor = 0x660000;
+	    //app.renderer.view.style.position = "absolute";
+		//app.renderer.view.style.display = "block";
+		this.app.renderer.autoDensity = true;
+		this.app.renderer.resize(this.opt.width, this.opt.height);	
+	    el.appendChild(this.app.view);
+	}
+
+	mainLoop() {
+  		console.log("loading resources...");
+  		let all = new Array();  		
+  		for (let k in this.opt.resources) {
+  			all = all.concat(this.opt.resources[k]);
+  		}
+  		console.log("resources", all);
+
+  		let self = this;
+  		PIXI.loader.add(all).load(function () {
+			console.log("setup...");
+			self.onSetup();			
+			self.app.ticker.add(function (delta) {
+  				if (self.opt.debug && self._done) {
+  					return;	
+  				}
+	  			self.onTick(delta);
+				if (self.opt.debug && !self._done) {
+					self._done = true;
+				}
+  			});
+  		});
+  	}
+}
+
+class PlayEngine extends BaseEngine {
+
+	constructor(el, strategy, opt) {
+		super(el, opt);
+		this.opt = opt;
+		this.debug = true;
+		this.strategy = strategy;
+	}
+
+	onSetup() {
 		console.log("initializing blood map...");
 	  		
 		this.bloodMap = new PIXI.Container();
@@ -38,26 +88,35 @@ function PlayEngine(stage, opt) {
 		//Imuno cells
 		this.sprites["imuno"] = new PIXI.Container();
 		this.texts["imuno"] = new PIXI.Container();
-		for (let i=0; i < 6; i++) {
+		for (let i=0; i < 9; i++) {
 			let texture = this.opt.resources["imuno"][randomInt(0, this.opt.resources["imuno"].length - 1)]
 			let sprite = new PIXI.Sprite(PIXI.loader.resources[texture].texture);
+			sprite.alpha = 0.75;
+			//sprite.rotation = Math.PI * Math.random();
 			this.sprites["imuno"].addChild(sprite);			
 			this.texts["imuno"].addChild(new PIXI.Text("imuno " + i, textStyle));
-		}
-		this.bloodMap.addChild(this.sprites["imuno"]);
-		this.bloodMap.addChild(this.texts["imuno"]);
+		}		
 
+		// Bacteria
 		this.sprites["bacteria"] = new PIXI.Container();
 		this.texts["bacteria"] = new PIXI.Container();
+		let start_id = this.sprites["imuno"].children.length;
 		let texture = this.opt.resources["bacteria"][randomInt(0, this.opt.resources["bacteria"].length - 1)];
 		for (let i=0; i < 20; i++) {
 			let sprite = new PIXI.Sprite(PIXI.loader.resources[texture].texture);
 			this.sprites["bacteria"].addChild(sprite);
-			this.texts["bacteria"].addChild(new PIXI.Text("bacteria " + i, textStyle));
+			this.texts["bacteria"].addChild(new PIXI.Text("bacteria " + (start_id + i), textStyle));
 		}
-		this.bloodMap.addChild(this.sprites["bacteria"]);		
-		this.bloodMap.addChild(this.texts["bacteria"]);
 		
+		this.bloodMap.addChild(this.sprites["bacteria"]);		
+		if (this.opt.debug) {
+			this.bloodMap.addChild(this.texts["bacteria"]);
+		}
+		this.bloodMap.addChild(this.sprites["imuno"]);
+		if (this.opt.debug) {
+			this.bloodMap.addChild(this.texts["imuno"]);
+		}
+
 		// cache for onTick method
 		this.bacteria_and_imuno_cells = this.sprites["imuno"].children.concat(this.sprites["bacteria"].children);
 
@@ -65,10 +124,10 @@ function PlayEngine(stage, opt) {
 		this.reset();
 
 		// render
-		this.stage.app.stage.addChild(this.bloodMap);
+		this.app.stage.addChild(this.bloodMap);
 	}
 
-	this.reset = function () {
+	reset() {
 		console.log("reset");
 
 		this.eat_mode = false;
@@ -93,9 +152,9 @@ function PlayEngine(stage, opt) {
 		}
 	}
 
-	this.onTick = function (delta) {
+	onTick(delta) {
 		console.log("onTick");
-		
+			    
 		let cmds = this.strategy.run(this);
 
 		// if any, digest commands
@@ -133,14 +192,31 @@ function PlayEngine(stage, opt) {
 			}
 		}
 
-		for (let k in this.bacteria_and_imuno_cells) {
-			let sprite = this.bacteria_and_imuno_cells[k];			
+		for (let k in this.sprites["bacteria"].children) {
+			let sprite = this.sprites["bacteria"].children[k];
 
 			let far_from_destiny = Math.abs((sprite.x - sprite.target_x)*(sprite.y - sprite.target_y)) > 0;
-			if (far_from_destiny) {
+			if (far_from_destiny) {				
 				sprite.x += sprite.vx;
 				sprite.y += sprite.vy;
-			}					
+			}
+
+			let hitWall = contain(sprite, this.opt.play);
+	    	if (hitWall) {
+	    		sprite.vx = 0;
+	    		sprite.vy = 0;
+	    		continue;
+	    	}				
+	    }
+
+		for (let k in this.sprites["imuno"].children) {
+			let sprite = this.sprites["imuno"].children[k];
+
+			let far_from_destiny = Math.abs((sprite.x - sprite.target_x)*(sprite.y - sprite.target_y)) > 0;
+			if (far_from_destiny) {				
+				sprite.x += (this.eat_mode ? 3 : 1) * sprite.vx;
+				sprite.y += (this.eat_mode ? 3 : 1) * sprite.vy;
+			}
 
 			let hitWall = contain(sprite, this.opt.play);
 	    	if (hitWall) {
@@ -150,7 +226,6 @@ function PlayEngine(stage, opt) {
 	    	}
 	    }
 
-	    this.eat_mode = false;
 		if (this.eat_mode) {
 			// avoid imuno cell colission
 			avoid_collisions(this.sprites["imuno"].children);
@@ -165,57 +240,70 @@ function PlayEngine(stage, opt) {
 			let bacteria_cell = this.sprites["bacteria"].children[k];
 			for (let l in this.sprites["imuno"].children) {
 				let imuno_cell = this.sprites["imuno"].children[l];
-				if (is_near(bacteria_cell, imuno_cell, 500)) {
+				if (is_near(bacteria_cell, imuno_cell, 900)) {
 					bacteria_cell.vx = 0;
 					bacteria_cell.vy = 0;	
-					bacteria_cell.alpha = 0.1;				
+					bacteria_cell.alpha = 0.25;
+					bacteria_cell.dead = true;					
 				}
 			}
 		}
 
     }
 
-    this.get_cells = function() {
+    get_cells() {
     	let cells = [];
     	for (let k in this.bacteria_and_imuno_cells) {
+    		let cell = this.bacteria_and_imuno_cells[k];
+    		if (cell.dead) {
+    			continue;
+    		}
     		cells.push({
     			id: parseInt(k),
-    			x: this.bacteria_and_imuno_cells[k].x,
-    			y: this.bacteria_and_imuno_cells[k].y,
-    			vx: this.bacteria_and_imuno_cells[k].vx,
-    			vy: this.bacteria_and_imuno_cells[k].vy,
+    			x: cell.x,
+    			y: cell.y,
+    			vx: cell.vx,
+    			vy: cell.vy,
     		});
     	}
     	return cells;
     }
 
-	this.get_imuno_cells = function() {
+	get_imuno_cells() {
 		let cells = [];		
 		for (let k in this.sprites["imuno"].children) {
-			cells.push({
-				id: parseInt(k),
-				x: this.sprites["imuno"].children[k].x,
-				y: this.sprites["imuno"].children[k].y,
-				vx: this.sprites["imuno"].children[k].vx,
-				vy: this.sprites["imuno"].children[k].vy,
-			});
+			let cell = this.sprites["imuno"].children[k];
+    		if (cell.dead) {
+    			continue;
+    		}
+    		cells.push({
+    			id: parseInt(k),
+    			x: cell.x,
+    			y: cell.y,
+    			vx: cell.vx,
+    			vy: cell.vy,
+    		});
 		}
 		return cells;
 	}
 
-	this.get_bacteria_cells = function() {
+	get_bacteria_cells() {
 		let cells = [];
 		let start_id = this.sprites["imuno"].children.length;
 		for (let k in this.sprites["bacteria"].children) {
-			cells.push({
-				id: start_id + parseInt(k),
-				x: this.sprites["bacteria"].children[k].x,
-				y: this.sprites["bacteria"].children[k].y,
-				vx: this.sprites["bacteria"].children[k].vx,
-				vy: this.sprites["bacteria"].children[k].vy,
-			});
+			let cell = this.sprites["bacteria"].children[k];
+    		if (cell.dead) {
+    			continue;
+    		}
+    		cells.push({
+    			id: parseInt(k),
+    			x: cell.x,
+    			y: cell.y,
+    			vx: cell.vx,
+    			vy: cell.vy,
+    		});
 		}
-		console.log("get_bacteria_cells", cells);
+		//console.log("get_bacteria_cells", cells);
 		return cells;
 	}
 

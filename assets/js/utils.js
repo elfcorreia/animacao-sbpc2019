@@ -211,6 +211,6 @@ function sort_by_nearest(obj, objs) {
 			return 1;
 		}
 	});
-	console.log("nearest", obj.id, aux[0].id);
+	//console.log("nearest", obj.id, aux[0].id);
 	return aux;
 }
