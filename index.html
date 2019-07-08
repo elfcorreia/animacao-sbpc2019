@@ -2,39 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Epitope prediction game</title>
-  <style>
-    .rows {
-      display: flex;
-      flex-direction: column;
-      flex-wrap: wrap;
-      align-items: stretch;
-    }    
-    .cols {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      align-items: stretch;
-    }
-    .fc {
-      justify-content: center;
-    }
-    .fsb {
-      justify-content: space-between;
-    }    
-    .fe {
-      justify-content: flex-end;
-    }
-    .col-1 {
-      flex-grow: 1;
-    }
-    .col-2 {
-      flex-grow: 2;
-    }
-    .br {
-      border: dashed 1pt red;
-    }    
-  </style>
+  <title>Epitope prediction game</title>  
 </head>
   
 <body>
@@ -44,43 +12,6 @@
 <!--
 	<div>Icons made by <a href="https://www.freepik.com/?__hstc=57440181.11e3a8c30d32a578b2bf4acfc3aeb08e.1560947566399.1560947566399.1560947566399.1&__hssc=57440181.4.1560947566400&__hsfp=1110192581" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/"                 title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/"                 title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
 -->
-	<div class="br rows">
-
-    <!-- score bar -->
-		<div class="col-1 br cols fsb">
-      <div class="cols">
-        <img src="assets/img/algorithm.png">
-        <div class="br rows fc">
-          <div>Inteligência Artificial</div>
-          <div>Pontos: 9</div>
-        </div>
-      </div>
-      
-      <div class="cols">
-        VS
-      </div>
-
-      <div class="cols">
-        <div class="br rows fc">
-          <div>Jogador</div>
-          <div>Pontos: 9</div>
-        </div>
-        <img src="assets/img/human.png">
-      </div>
-		</div>
-
-		<div class="col-2 br cols fg">
-<!--        <div class="">-->
-<!--  				<div style="font-family: Futura; font-size: 14pt; border: solid 1pt green;">-->
-<!--  					GATAC>-->
-<!--  				</div>-->
-<!--  			</div>-->
-      <img src="assets/img/back.png" style="width: 100px;">
-      <img src="assets/img/back.png" style="width: 100px;">
-      <img src="assets/img/back.png" style="width: 100px;">
-    </div>
-	</div>
-
 	<script src="assets/js/pixi.js"></script>
   <script src="assets/js/utils.js"></script>
   <script src="assets/js/engine.js"></script>
@@ -96,7 +27,8 @@
         y: 0, 
         width: 800, 
         height: 600 
-      },      
+      },
+      max_score: 3,
       resources: {
         bacteria: [
           //"assets/img/bac_frame.png",
@@ -114,22 +46,25 @@
         blood: [
             "assets/img/blood1.png"
           ],
-          "sidemap_background": [
-            "assets/img/sidemap_background.png"
-          ],
-          "players": [
-            "assets/img/algorithm.png",
-            "assets/img/brain.png",
-          ],
-          "cards": [
-            "assets/img/back.png",
-            "assets/img/card_sick.png",
-            "assets/img/card_good.png",
-          ]
+        sidemap_background: [
+          "assets/img/sidemap_background.png"
+        ],
+        players: [
+          "assets/img/algorithm.png",
+          "assets/img/human.png",
+        ],
+        cards: [
+          "assets/img/back.png",
+          "assets/img/card_sick.png",
+          "assets/img/card_good.png",
+        ],
+        score: [
+          "assets/img/ponto.png"
+        ]
       },
     };
 
-    var gameWindow = window.open();
+    var gameWindow = window; //window.open();
     let strategy = new PlayStrategy();
   	let game = new PlayEngine(gameWindow.document.body, strategy, gameOptions);    
   	game.mainLoop();

@@ -54,7 +54,7 @@ class PlayEngine extends BaseEngine {
 		this.strategy = strategy;
 	}
 
-	onSetup() {
+	onSetupBloodMap() {
 		console.log("initializing blood map...");
 	  		
 		this.bloodMap = new PIXI.Container();
@@ -120,11 +120,78 @@ class PlayEngine extends BaseEngine {
 		// cache for onTick method
 		this.bacteria_and_imuno_cells = this.sprites["imuno"].children.concat(this.sprites["bacteria"].children);
 
-		// enter ready state
-		this.reset();
-
 		// render
 		this.app.stage.addChild(this.bloodMap);
+	}
+
+	onSetupScoreBar() {
+		this.scores = {};
+
+		let SCOREBAR_WIDTH = 250;
+		let PLAYER_NAME_TOP_PADDING = 8;
+		let SCORE_SPRITE_WIDTH = 32;
+		let score_texture = this.opt.resources["score"][0];
+
+		let textStyle = new PIXI.TextStyle({
+			fontSize: 18,
+			fill: "#ffffff"
+		});
+
+		// Algorithm scorebar
+			let player1_scorebar = new PIXI.Container();
+			let texture = this.opt.resources["players"][0];
+			let player1_icon = new PIXI.Sprite(PIXI.loader.resources[texture].texture);
+			player1_scorebar.addChild(player1_icon);
+			
+			let player1_name = new PIXI.Text("ALGORITMO", textStyle);
+			player1_name.x = player1_icon.x + player1_icon.width;
+			player1_name.y = PLAYER_NAME_TOP_PADDING;
+			player1_scorebar.addChild(player1_name);
+			
+			this.scores["algorithm"] = new PIXI.Container();
+
+			for (let i = 0; i < this.opt.max_score; i++) {
+				let aux = new PIXI.Sprite(PIXI.loader.resources[score_texture].texture);
+				aux.x = 32 * i;
+				this.scores["algorithm"].addChild(aux);
+			}
+			this.scores["algorithm"].x = player1_icon.x + player1_icon.width;
+			this.scores["algorithm"].y = player1_name.y + player1_name.height;
+			player1_scorebar.addChild(this.scores["algorithm"]);
+
+			this.app.stage.addChild(player1_scorebar);
+
+		// Human scorebar
+			let player2_scorebar = new PIXI.Container();
+			let texture2 = this.opt.resources["players"][1];
+			let player2_icon = new PIXI.Sprite(PIXI.loader.resources[texture2].texture);
+			player2_icon.x = SCOREBAR_WIDTH - player2_icon.width;
+			player2_scorebar.addChild(player2_icon);
+			
+			let player2_name = new PIXI.Text("JOGADOR", textStyle);
+			player2_name.x = SCOREBAR_WIDTH - player2_icon.width - player2_name.width;
+			player2_name.y = PLAYER_NAME_TOP_PADDING;
+			player2_scorebar.addChild(player2_name);
+			
+			this.scores["human"] = new PIXI.Container();
+
+			for (let i = 0; i < this.opt.max_score; i++) {
+				let aux = new PIXI.Sprite(PIXI.loader.resources[score_texture].texture);
+				aux.x = aux.width * this.opt.max_score - (i * aux.width);
+				this.scores["human"].addChild(aux);
+			}
+			this.scores["human"].x = SCOREBAR_WIDTH - player2_icon.width - (SCORE_SPRITE_WIDTH * (this.opt.max_score + 1));
+			this.scores["human"].y = player2_name.y + player2_name.height;
+			player2_scorebar.addChild(this.scores["human"]);
+			player2_scorebar.x = this.opt.play.width - SCOREBAR_WIDTH;			
+			this.app.stage.addChild(player2_scorebar);
+	}
+
+	onSetup() {
+		this.onSetupBloodMap();
+		this.onSetupScoreBar();
+		
+		this.reset();
 	}
 
 	reset() {
@@ -133,6 +200,8 @@ class PlayEngine extends BaseEngine {
 		this.eat_mode = false;
 		this.player_score = 0;
 		this.algorithm_score = 0;
+		this.setScore("algorithm", 0);
+		this.setScore("human", 0);
 
 		for (let k in this.sprites["blood"].children) {
 			let sprite = this.sprites["blood"].children[k];
@@ -307,6 +376,12 @@ class PlayEngine extends BaseEngine {
 		}
 		//console.log("get_bacteria_cells", cells);
 		return cells;
+	}
+
+	setScore(player, score) {
+		for (let i = 0; i < this.opt.max_score; i++) {
+			this.scores[player].children[i].visible = i < score;
+		}
 	}
 
 }
