@@ -1,235 +1,138 @@
+<!doctype html>
 <html>
 <head>
-	<link rel="stylesheet" type="text/css" href="assets/css/style.css">
+  <meta charset="utf-8">
+  <title>Epitope prediction game</title>
+  <style>
+    .rows {
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      align-items: stretch;
+    }    
+    .cols {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: stretch;
+    }
+    .fc {
+      justify-content: center;
+    }
+    .fsb {
+      justify-content: space-between;
+    }    
+    .fe {
+      justify-content: flex-end;
+    }
+    .col-1 {
+      flex-grow: 1;
+    }
+    .col-2 {
+      flex-grow: 2;
+    }
+    .br {
+      border: dashed 1pt red;
+    }    
+  </style>
 </head>
-<body style="display: flex; text-align: center;">
-<div id="inicio" class="center">
-	<h1>Titulo</h1>
+  
+<body>
+	<!--
+		https://www.ibiology.org/immunology/cells-immune-system/
+	-->
+<!--
+	<div>Icons made by <a href="https://www.freepik.com/?__hstc=57440181.11e3a8c30d32a578b2bf4acfc3aeb08e.1560947566399.1560947566399.1560947566399.1&__hssc=57440181.4.1560947566400&__hsfp=1110192581" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/"                 title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/"                 title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+-->
+	<div class="br rows">
 
-	<div>
-		<div class="btn orange">
-			O que há por trás
+    <!-- score bar -->
+		<div class="col-1 br cols fsb">
+      <div class="cols">
+        <img src="assets/img/algorithm.png">
+        <div class="br rows fc">
+          <div>Inteligência Artificial</div>
+          <div>Pontos: 9</div>
+        </div>
+      </div>
+      
+      <div class="cols">
+        VS
+      </div>
+
+      <div class="cols">
+        <div class="br rows fc">
+          <div>Jogador</div>
+          <div>Pontos: 9</div>
+        </div>
+        <img src="assets/img/human.png">
+      </div>
 		</div>
-		<div class="btn orange">
-			Desafio
-		</div>
+
+		<div class="col-2 br cols fg">
+<!--        <div class="">-->
+<!--  				<div style="font-family: Futura; font-size: 14pt; border: solid 1pt green;">-->
+<!--  					GATAC>-->
+<!--  				</div>-->
+<!--  			</div>-->
+      <img src="assets/img/back.png" style="width: 100px;">
+      <img src="assets/img/back.png" style="width: 100px;">
+      <img src="assets/img/back.png" style="width: 100px;">
+    </div>
 	</div>
-</div>
 
-<div id="slides" class="center">
-</div>
+	<script src="assets/js/pixi.js"></script>
+  <script src="assets/js/utils.js"></script>
+  <script src="assets/js/engine.js"></script>
+  <script src="assets/js/strategy.js"></script>
+	<script src="assets/js/game.js"></script>
 
-<div id="game" class="center" style="display: flex;">
-	<canvas id="c" style="border: dashed 1pt gray; width: 100%;"></canvas>
-	<div style="display: flex; flex-direction: column;">
-		<div style="text-align: center;">
-			<p>Inteligência Artifical</p>
-			<img src="assets/img/back.png" style="height: 180px;">
-		</div>		
-		<div style="margin-top: 20px; text-align: center;">
-			<img src="assets/img/back.png" style="height: 180px;">
-			<p>Sua aposta</p>
-			<button>Há resposta</button>
-			<button>Não há resposta</button>			
-		</div>
-	</div>
-</div>
+  <script type="text/javascript">
+    let gameOptions = {
+      width: 800, 
+      height: 600,
+      play: {
+        x: 0, 
+        y: 0, 
+        width: 800, 
+        height: 600 
+      },      
+      resources: {
+        bacteria: [
+          //"assets/img/bac_frame.png",
+          "assets/img/bac1.png",
+          //"assets/img/bac3.png",
+          //"assets/img/bac4.png",
+          //"assets/img/bac5.png",
+          ],
+          imuno: [    
+          //"assets/img/imuno_frame.png",
+          "assets/img/imuno2.png",
+          //"assets/img/imuno3.png",
+          //"assets/img/imuno4.png",
+        ],
+        blood: [
+            "assets/img/blood1.png"
+          ],
+          "sidemap_background": [
+            "assets/img/sidemap_background.png"
+          ],
+          "players": [
+            "assets/img/algorithm.png",
+            "assets/img/brain.png",
+          ],
+          "cards": [
+            "assets/img/back.png",
+            "assets/img/card_sick.png",
+            "assets/img/card_good.png",
+          ]
+      },
+    };
 
+    var gameWindow = window.open();
+    let strategy = new PlayStrategy();
+  	let game = new PlayEngine(gameWindow.document.body, strategy, gameOptions);    
+  	game.mainLoop();
+  </script>
 </body>
-	<script type="text/javascript" src="assets/js/fabric.min.js"></script>
-	<script type="text/javascript" src="assets/js/utils.js"></script>
-	<script type="text/javascript">
-		
-		class Manager {
-			constructor() {
-				this.inicio = document.getElementById("inicio")
-				this.slides = document.getElementById("slides")
-				this.game = document.getElementById("game")								
-				
-				this.switcher = new Switcher([
-					this.inicio, this.slides, this.game
-				])
-
-				this.switcher.switchTo(this.inicio)				
-			}
-		}
-
-		class Switcher {
-
-			constructor(elements) {
-				this.els = elements
-			}
-
-			switchTo(el) {
-				this.els.forEach(function(item) {
-					item.classList.remove(item == el ? "hidden": "shown")
-					item.classList.add(item == el ? "shown": "hidden")
-				})
-			}
-
-		}
-
-		class Scene {
-			constructor(canvas_element_id) {
-				this.canvas = new fabric.StaticCanvas(canvas_element_id, {
-					//backgroundColor: 'rgb(174,9,13)',
-					backgroundImage: 'assets/img/background.jpg',
-					width: 800,
-					height: 480
-				});
-				this.defense_radius = 30
-				this.backgroundObject
-				this.create_defense_cells()
-				this.create_strange_body()
-				setInterval(this.animate.bind(this), 60)
-			}
-
-			create_defense_cells() {
-				this.defense_cells = Array()
-				this.defense_cells_momentum = Array()
-				for (var i=0; i < 10; i++) {					
-					var b = new fabric.Circle({
-						fill: 'rgba(255, 255, 255, 0.5)',
-						radius: this.defense_radius,
-						alpha: 0.9,
-						left: Math.random() * this.canvas.width - this.defense_radius/2,
-						top: Math.random() * this.canvas.height - this.defense_radius/2,
-					});
-					this.defense_cells.push(b);
-					this.canvas.add(b);
-
-					(Math.random() > 0.5 ? 1 : -1)
-					this.defense_cells_momentum.push({
-						x: (1 + Math.random()) * (Math.random() > 0.5 ? 1 : -1), 
-						y: (1 + Math.random()) * (Math.random() > 0.5 ? 1 : -1)
-					})
-				}
-
-				this.limit_left = this.canvas.width - this.defense_radius*2
-				this.limit_top = this.canvas.height - this.defense_radius*2
-				let collision_distance_limit = this.defense_radius*2
-				this.collision_distance_limit_squared = collision_distance_limit*collision_distance_limit
-			}
-
-			create_strange_body() {
-				let x = Math.floor(this.canvas.width / 2)
-				let y = Math.floor(this.canvas.height / 2)
-				this.strange_body = new fabric.Path('M 10 10 L 30 30 L 50 20 L 10 0 z')
-				this.strange_body.set({
-					fill: 'green',
-					stroke: 'blue', 
-					opacity: .9,
-					left: x,
-					top: y
-				});
-				this.canvas.add(this.strange_body)
-			}
-
-			animate() {
-				//this.animate_defense_cells_particle();
-				this.animate_defense_cells();
-				this.canvas.renderAll();
-			}
-
-			animate_defense_cells_particle() {
-				let self = this
-				this.defense_cells.forEach(function(item) {
-					let dx = Math.floor(Math.random()*3 - 1)
-					var nleft = item.left + dx
-					nleft = nleft > self.limit_left ? nleft - 2*dx : nleft
-					nleft = nleft < 0 ? nleft + 2*dx : nleft
-					
-					let dy = Math.floor(Math.random()*3 - 1)
-					var ntop = item.top + dy
-					ntop = ntop > self.limit_top ? ntop - 2*dx : ntop
-					ntop = ntop < 0 ? ntop + 2*dx : ntop
-
-					item.set({left: nleft, top: ntop});
-				});
-			}
-
-			check_collission_squared(a, b, index) {
-				let ax = a.left + a.radius
-				let ay = a.top + a.radius
-				let bx = b.left + b.radius
-				let by = b.top + b.radius
-
-				let dx = bx - ax
-				let dy = by - ay
-
-				// update direction
-				// this.defense_cells_momentum[index].x = dx > 0 ? 1 : -1
-				// this.defense_cells_momentum[index].y = dy > 0 ? 1 : -1
-
-				let d_squared = dx*dx + dy*dy
-				console.log(d_squared, this.collision_distance_limit_squared)				
-				return d_squared < this.collision_distance_limit_squared
-			}
-
-			check_collission(a, b) {
-				return a.left < b.left + b.radius
-											&& a.left + a.width > b.left 
-											&& a.top < b.top + b.height 
-											&& a.top + a.height > b.top
-			}
-
-			animate_defense_cells() {				
-				let self = this
-				this.defense_cells.forEach(function(item, index, array) {
-					if (Math.random() < 0.5) {
-						// keep stopped
-						return;
-					}
-					var dx = self.defense_cells_momentum[index].x
-					var dy = self.defense_cells_momentum[index].y
-					
-					let decision = Math.random()
-					if (decision < 0.95) {
-						// keep the movement
-					} else {
-						if (Math.random() < 0.5) {
-							self.defense_cells_momentum[index].x *= -1
-							dx = self.defense_cells_momentum[index].x
-						}
-						if (Math.random() < 0.5) {
-							self.defense_cells_momentum[index].y *= -1
-							dy = self.defense_cells_momentum[index].y
-						}
-					}
-
-					// invert x direction if in the right
-					let px = item.left + dx
-					if (px < 0 || px > self.limit_left) {
-						self.defense_cells_momentum[index].x *= -1
-						dx = self.defense_cells_momentum[index].x
-					}
-
-					// invert y direction if hit frontier
-					let py = item.top + dy
-					if (py < 0 || py < self.limit_top) {
-						self.defense_cells_momentum[index].y *= -1
-						dy = self.defense_cells_momentum[index].y
-					}
-
-					for (var i in array) {						
-						if (item != array[i]) {
-							if (self.check_collission_squared(item, array[i], i)) {
-								self.defense_cells_momentum[index].x *= -1
-								dx = self.defense_cells_momentum[index].x
-
-								self.defense_cells_momentum[index].y *= -1
-								dy = self.defense_cells_momentum[index].y
-								break
-							}
-						}
-					}
-
-					item.set({left: item.left + dx, top: item.top + dy});
-				});
-			}
-		}
-
-		// var scene = new Scene("c");
-		var manager = new Manager();		
-	</script>
 </html>

@@ -131,6 +131,8 @@ class PlayEngine extends BaseEngine {
 		console.log("reset");
 
 		this.eat_mode = false;
+		this.player_score = 0;
+		this.algorithm_score = 0;
 
 		for (let k in this.sprites["blood"].children) {
 			let sprite = this.sprites["blood"].children[k];
