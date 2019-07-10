@@ -47,11 +47,12 @@ class BaseEngine {
 
 class PlayEngine extends BaseEngine {
 
-	constructor(el, strategy, opt) {
+	constructor(el, strategy, data, opt) {
 		super(el, opt);
-		this.opt = opt;
-		this.debug = true;
 		this.strategy = strategy;
+		this.data = data;
+		this.opt = opt;		
+		el.addEventListener("keydown", this.onKeyDown.bind(this), true);
 	}
 
 	setupBloodMap() {
@@ -59,77 +60,75 @@ class PlayEngine extends BaseEngine {
 	  		
 		this.bloodMap = new PIXI.Container();
 			
-		// Background
+		// background
 		let background = new PIXI.Graphics();
-		background.beginFill(0x660000);
-		background.drawRect(this.opt.play.x, this.opt.play.y, this.opt.play.width, this.opt.play.height);
+		background.beginFill(this.opt.bloodmap.bgcolor);
+		background.drawRect(this.opt.bloodmap.x, this.opt.bloodmap.y, this.opt.bloodmap.width, this.opt.bloodmap.height);
 		background.endFill();
-		background.x = this.opt.play.x;
-		background.y = this.opt.play.y;
+		background.x = this.opt.bloodmap.x;
+		background.y = this.opt.bloodmap.y;
 		this.bloodMap.addChild(background);
 
 		this.sprites = {};
 		this.texts = {};
 
-		// Blood cells
+		// blood cells
 		this.sprites["blood"] = new PIXI.Container();
-		for (let i=0; i < 40; i++) {			
+		for (let i = 0; i < this.opt.bloodmap.cells.blood.count; i++) {			
 			let texture = this.opt.resources["blood"][randomInt(0, this.opt.resources["blood"].length - 1)]
 			let sprite = new PIXI.Sprite(PIXI.loader.resources[texture].texture);					
 			this.sprites["blood"].addChild(sprite);
 		}
-		this.bloodMap.addChild(this.sprites["blood"]);
 
-		let textStyle = new PIXI.TextStyle({
-			fontSize: 12,
-			fill: "#ffffff"
-		});
-
-		//Imuno cells
+		// imuno cells
 		this.sprites["imuno"] = new PIXI.Container();
-		this.texts["imuno"] = new PIXI.Container();
-		for (let i=0; i < 9; i++) {
+		for (let i = 0; i < this.opt.bloodmap.cells.imuno.count; i++) {
 			let texture = this.opt.resources["imuno"][randomInt(0, this.opt.resources["imuno"].length - 1)]
 			let sprite = new PIXI.Sprite(PIXI.loader.resources[texture].texture);
-			sprite.alpha = 0.75;
-			//sprite.rotation = Math.PI * Math.random();
-			this.sprites["imuno"].addChild(sprite);			
-			this.texts["imuno"].addChild(new PIXI.Text("imuno " + i, textStyle));
-		}		
+			sprite.alpha = this.opt.bloodmap.cells.imuno.alpha;
+			this.sprites["imuno"].addChild(sprite);
+		}
 
-		// Bacteria
+		// bacteria cells
 		this.sprites["bacteria"] = new PIXI.Container();
-		this.texts["bacteria"] = new PIXI.Container();
-		let start_id = this.sprites["imuno"].children.length;
 		let texture = this.opt.resources["bacteria"][randomInt(0, this.opt.resources["bacteria"].length - 1)];
-		for (let i=0; i < 20; i++) {
+		for (let i = 0; i < this.opt.bloodmap.cells.bacteria.count; i++) {
 			let sprite = new PIXI.Sprite(PIXI.loader.resources[texture].texture);
 			this.sprites["bacteria"].addChild(sprite);
-			this.texts["bacteria"].addChild(new PIXI.Text("bacteria " + (start_id + i), textStyle));
-		}
-		
-		this.bloodMap.addChild(this.sprites["bacteria"]);		
-		if (this.opt.debug) {
-			this.bloodMap.addChild(this.texts["bacteria"]);
-		}
-		this.bloodMap.addChild(this.sprites["imuno"]);
-		if (this.opt.debug) {
-			this.bloodMap.addChild(this.texts["imuno"]);
 		}
 
-		// cache for onTick method
+		// cache sprites for onTick method
 		this.bacteria_and_imuno_cells = this.sprites["imuno"].children.concat(this.sprites["bacteria"].children);
 
 		// render
+		this.bloodMap.addChild(this.sprites["blood"]);
+		this.bloodMap.addChild(this.sprites["bacteria"]);
+		this.bloodMap.addChild(this.sprites["imuno"]);
+
+		// put debug texts
+		if (this.opt.debug) {
+			let textStyle = new PIXI.TextStyle({
+				fontSize: 12,
+				fill: "#ffffff"
+			});
+			let group = new PIXI.Container();
+			for (let i = 0; i < this.sprites["imuno"].children; i++) {
+				group.addChild(new PIXI.Text("imuno " + i, textStyle));
+			}
+			let start_bacteria_id = this.sprites["imuno"].children.length;
+			for (let i = 0; i < this.sprites["bacteria"].children; i++) {
+				group.addChild(new PIXI.Text("bacteria " + (start_bacteria_id + i), textStyle));
+			}
+			this.sprite_labels = group;
+		}
+		
 		this.app.stage.addChild(this.bloodMap);
 	}
 
 	setupScoreBar() {
 		this.scores = {};
 
-		let SCOREBAR_WIDTH = 250;
 		let PLAYER_NAME_TOP_PADDING = 8;
-		let SCORE_SPRITE_WIDTH = 32;
 		let score_texture = this.opt.resources["score"][0];
 
 		let textStyle = new PIXI.TextStyle({
@@ -137,105 +136,102 @@ class PlayEngine extends BaseEngine {
 			fill: "#ffffff"
 		});
 
-		// Algorithm scorebar
+		// player1 scorebar
 		let player1_scorebar = new PIXI.Container();
 		let texture = this.opt.resources["players"][0];
 		let player1_icon = new PIXI.Sprite(PIXI.loader.resources[texture].texture);
 		player1_scorebar.addChild(player1_icon);
 		
-		let player1_name = new PIXI.Text("ALGORITMO", textStyle);
+		let player1_name = new PIXI.Text(this.opt.scorebar.player1.name, textStyle);
 		player1_name.x = player1_icon.x + player1_icon.width;
 		player1_name.y = PLAYER_NAME_TOP_PADDING;
 		player1_scorebar.addChild(player1_name);
 		
-		this.scores["algorithm"] = new PIXI.Container();
+		this.scores["player1"] = new PIXI.Container();
 
-		for (let i = 0; i < this.opt.max_score; i++) {
+		for (let i = 0; i < this.opt.scorebar.score.max; i++) {
 			let aux = new PIXI.Sprite(PIXI.loader.resources[score_texture].texture);
-			aux.x = 32 * i;
-			this.scores["algorithm"].addChild(aux);
+			aux.x = this.opt.scorebar.score.width * i;
+			this.scores["player1"].addChild(aux);
 		}
-		this.scores["algorithm"].x = player1_icon.x + player1_icon.width;
-		this.scores["algorithm"].y = player1_name.y + player1_name.height;
-		player1_scorebar.addChild(this.scores["algorithm"]);
+		this.scores["player1"].x = player1_icon.x + player1_icon.width;
+		this.scores["player1"].y = player1_name.y + player1_name.height;
+		player1_scorebar.addChild(this.scores["player1"]);
 
-		this.app.stage.addChild(player1_scorebar);
-
-		// Human scorebar
+		// player2 scorebar
 		let player2_scorebar = new PIXI.Container();
 		let texture2 = this.opt.resources["players"][1];
 		let player2_icon = new PIXI.Sprite(PIXI.loader.resources[texture2].texture);
-		player2_icon.x = SCOREBAR_WIDTH - player2_icon.width;
+		player2_icon.x = this.opt.scorebar.width - player2_icon.width;
 		player2_scorebar.addChild(player2_icon);
 		
-		let player2_name = new PIXI.Text("JOGADOR", textStyle);
-		player2_name.x = SCOREBAR_WIDTH - player2_icon.width - player2_name.width;
+		let player2_name = new PIXI.Text(this.opt.scorebar.player2.name, textStyle);
+		player2_name.x = this.opt.scorebar.width - player2_icon.width - player2_name.width;
 		player2_name.y = PLAYER_NAME_TOP_PADDING;
 		player2_scorebar.addChild(player2_name);
 		
-		this.scores["human"] = new PIXI.Container();
+		this.scores["player2"] = new PIXI.Container();
 
-		for (let i = 0; i < this.opt.max_score; i++) {
+		for (let i = 0; i < this.opt.scorebar.score.max; i++) {
 			let aux = new PIXI.Sprite(PIXI.loader.resources[score_texture].texture);
-			aux.x = aux.width * this.opt.max_score - (i * aux.width);
-			this.scores["human"].addChild(aux);
+			aux.x = aux.width * this.opt.scorebar.score.max - (i * aux.width);
+			this.scores["player2"].addChild(aux);
 		}
-		this.scores["human"].x = SCOREBAR_WIDTH - player2_icon.width - (SCORE_SPRITE_WIDTH * (this.opt.max_score + 1));
-		this.scores["human"].y = player2_name.y + player2_name.height;
-		player2_scorebar.addChild(this.scores["human"]);
-		player2_scorebar.x = this.opt.play.width - SCOREBAR_WIDTH;			
+		this.scores["player2"].x = this.opt.scorebar.width - player2_icon.width - (this.opt.scorebar.score.width * (this.opt.scorebar.score.max + 1));
+		this.scores["player2"].y = player2_name.y + player2_name.height;
+		player2_scorebar.addChild(this.scores["player2"]);
+		player2_scorebar.x = this.opt.bloodmap.width - this.opt.scorebar.width;			
+		
+		this.app.stage.addChild(player1_scorebar);
 		this.app.stage.addChild(player2_scorebar);
 	}
 
 	setupBottom() {
 		this.decks = {}
-
-		let BOTTOM_HEIGTH = 200;
-		let DECK_WIDTH = 200;
-		let CARD_WIDTH = 115;
-		let CARD_HEIGHT = 175;
-		let textStyle = new PIXI.TextStyle({
-			fontSize: 16,
-			fill: "#ffffff"
-		});
-
+		let textStyle = new PIXI.TextStyle(this.opt.bottom.textStyle);
 		let group = new PIXI.Container();
+
 		let background = new PIXI.TilingSprite(
 			PIXI.loader.resources[this.opt.resources.bottom_background[0]].texture,
-			this.opt.play.width,
-			BOTTOM_HEIGTH,
+			this.opt.bottom.width,
+			this.opt.bottom.height,
 		);
 		group.addChild(background);
 
-		this.decks["algorithm"] = new PIXI.Container();
+		this.decks["player1"] = new PIXI.Container();
 		for (let i = 0; i < this.opt.resources.deck.length; i++) {
 			let sprite = new PIXI.Sprite(PIXI.loader.resources[this.opt.resources.deck[i]].texture);
-			sprite.width = CARD_WIDTH;
-			sprite.height = CARD_HEIGHT;			
-			this.decks["algorithm"].addChild(sprite);
+			sprite.width = this.opt.bottom.deck.card.width;
+			sprite.height = this.opt.bottom.deck.card.height;
+			this.decks["player1"].addChild(sprite);
 		}		
-		group.addChild(this.decks["algorithm"]);
+		group.addChild(this.decks["player1"]);
 
-		this.decks["human"] = new PIXI.Container();
+		this.decks["player2"] = new PIXI.Container();
 		for (let i = 0; i < this.opt.resources.deck.length; i++) {
 			let sprite = new PIXI.Sprite(PIXI.loader.resources[this.opt.resources.deck[i]].texture);
-			sprite.width = CARD_WIDTH;
-			sprite.height = CARD_HEIGHT;			
-			this.decks["human"].addChild(sprite);
+			sprite.width = this.opt.bottom.deck.card.width;
+			sprite.height = this.opt.bottom.deck.card.height;		
+			this.decks["player2"].addChild(sprite);
 		}
-		this.decks["human"].x = this.opt.play.width - DECK_WIDTH;
-		group.addChild(this.decks["human"]);
+		this.decks["player2"].x = this.opt.bottom.width - this.opt.bottom.deck.width;
+		group.addChild(this.decks["player2"]);
 
-		this.status_text = new PIXI.Text("TURNO 1 de 3", textStyle);
-		this.status_text.x = (this.opt.play.width / 2) - (this.status_text.width / 2);
+		this.status_text = new PIXI.Text("TURNO 1", textStyle);
+		this.status_text.x = (this.opt.bottom.width / 2) - (this.status_text.width / 2);
 		group.addChild(this.status_text);
 
-		this.epitopo_text = new PIXI.Text("AGTAVGH", textStyle);
-		this.epitopo_text.x = (this.opt.play.width / 2) - (this.epitopo_text.width / 2);
+		this.help_text = new PIXI.Text("Ajuda", textStyle);
+		this.help_text.x = (this.opt.bottom.width / 2) - (this.status_text.width / 2);
+		this.help_text.y = this.opt.bottom.height - this.help_text.height;
+		group.addChild(this.help_text);
+
+		this.epitopo_text = new PIXI.Text("XXXXXXXXX", textStyle);
+		this.epitopo_text.x = (this.opt.bottom.width / 2) - (this.epitopo_text.width / 2);
 		this.epitopo_text.y = this.status_text.y + this.status_text.height;
 		group.addChild(this.epitopo_text);
 		
-		group.y = this.opt.play.height - BOTTOM_HEIGTH;
+		group.y = this.opt.height - this.opt.bottom.height;
 		this.app.stage.addChild(group);
 	}
 
@@ -243,40 +239,148 @@ class PlayEngine extends BaseEngine {
 		this.setupBloodMap();
 		this.setupScoreBar();
 		this.setupBottom();
-		this.reset();
+
+		this.enter_new_game_state();
 	}
 
-	reset() {
-		console.log("reset");
+	enter_new_game_state() {
+		console.log("entering new game state");
 
+		this.player1_score = 0;
+		this.player2_score = 0;
+		this.setScore("player1", 0);
+		this.setScore("player2", 0);
+		
+		this.round = 0;	
+		this.enter_start_round_state();		
+	}
+
+	enter_start_round_state() {
+		console.log("enter start round state");
+		
 		this.eat_mode = false;
-		this.player_score = 0;
-		this.algorithm_score = 0;
-		this.setScore("algorithm", 0);
-		this.setScore("human", 0);
+		this.round += 1;
+		this.setStatus("TURNO " + this.round);
+		this.setEpitopo(this.data.getEpitopo());
 
 		for (let k in this.sprites["blood"].children) {
 			let sprite = this.sprites["blood"].children[k];
 			sprite.rotation = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 3.14);
-			sprite.x = randomInt(0, this.opt.play.width - sprite.width);
-			sprite.y = randomInt(0, this.opt.play.height - sprite.height);	
+			sprite.x = randomInt(0, this.opt.bloodmap.width - sprite.width);
+			sprite.y = randomInt(0, this.opt.bloodmap.height - sprite.height);
 		}
 		
-		place_at_random(this.bacteria_and_imuno_cells, this.opt.play)
-
-		for (let k in this.sprites["imuno"].children) {
-			this.texts["imuno"].children[k].x = this.sprites["imuno"].children[k].x;
-			this.texts["imuno"].children[k].y = this.sprites["imuno"].children[k].y;
-		}
+		place_at_random(this.bacteria_and_imuno_cells, this.opt.bloodmap)
 
 		for (let k in this.sprites["bacteria"].children) {
-			this.texts["bacteria"].children[k].x = this.sprites["bacteria"].children[k].x;
-			this.texts["bacteria"].children[k].y = this.sprites["bacteria"].children[k].y;
+			this.sprites["bacteria"].children[k].alpha = 1;
 		}
+
+		if (this.opt.debug) {
+			for (let k in this.bacteria_and_imuno_cells.children) {
+				this.sprite_labels.children[k].x = this.bacteria_and_imuno_cells.children[k].x;
+				this.sprite_labels.children[k].y = this.bacteria_and_imuno_cells.children[k].y;
+			}
+		}
+
+		this.selectedCard = {};
+		this.selectedCard["player1"] = this.data.getAlgorithmChoice() ? 1 : 2;		
+		this.showCard("player1", 0);
+		this.selectedCard["player2"] = 1;
+		this.showCard("player2", 1);
+		this.enter_select_card_state();
+	}
+
+	enter_select_card_state() {
+		console.log("enter select card state");
+		this.state = "select-card";
+		this.setHelp("Use as setas <-- --> para selecionar sua carta\ne pressione Enter");
+	}
+
+	enter_end_round_state() {
+		this.state = "end-round-state";
+
+		this.showCard("player1", this.selectedCard["player1"]);
+
+		this.ground_true = this.data.getGroundTrue();
+		//console.log("end-round-state", "ground_true", ground_true, "selectedCard", this.selectedCard);
+		this.eat_mode = this.ground_true;
+		if (this.ground_true) {
+			this.setHelp("Houve resposta imunológica!");
+		} else {
+			this.setHelp("Não houve resposta imunológica!");
+		}
+		setTimeout(this.enter_score_round_state.bind(this), this.opt.scoring_timeout);
+	}
+
+	enter_score_round_state() {
+		var player1 = false;
+		var player2 = false;
+		console.log(this);
+
+		var response = this.selectedCard["player1"] === 2;
+		if (response === this.ground_true) {
+			this.player1_score += 1;
+			this.setScore("player1", this.player1_score);
+			player1 = true;
+		}
+
+		response = this.selectedCard["player2"] === 2;
+		if (response === this.ground_true) {
+			this.player2_score += 1;
+			this.setScore("player2", this.player2_score);
+			player2 = true;
+		}
+
+//		console.log("score_round", { 
+//			ground_true: this.ground_true, 
+//			selectedCard: this.selectedCard, 
+//			player1_score: this.player1_score, 
+//			player2_score: this.player2_score
+//		});
+
+		if (player1 && player2) {
+			this.setHelp("Ambos acertaram!");
+		} else if (player1 && !player2) {
+			this.setHelp("Algoritmo marcou ponto!");
+		} else if (!player1 && player2) {
+			this.setHelp("Você marcou ponto!");
+		} else {
+			this.setHelp("Ninguém marcou ponto!");
+		}
+		setTimeout(this.enter_start_round_state.bind(this), this.opt.scoring_timeout);		
+	}
+
+	onKeyDown(event) {
+		console.log("onKeyDown", this, event);
+
+		if (event.code == "Escape") {
+			this.enter_new_game_state();
+			return;
+		}
+
+		if (this.state == "select-card") {
+			if (event.code === "ArrowRight") {
+				this.selectedCard["player2"] += 1;
+				if (this.selectedCard["player2"] >= this.opt.resources.deck.length) {
+					this.selectedCard["player2"] = 1;
+				}
+				this.showCard("player2", this.selectedCard["player2"]);
+			} else if (event.code === "ArrowLeft") {
+				this.selectedCard["player2"] -= 1;
+				if (this.selectedCard["player2"] <= 0) {
+					this.selectedCard["player2"] = this.opt.resources.deck.length - 1;
+				}
+				this.showCard("player2", this.selectedCard["player2"]);
+			} else if (event.code == "Enter") {
+				this.enter_end_round_state();
+			}
+			//console.log("key", this.selectedCard)
+		}		
 	}
 
 	onTick(delta) {
-		console.log("onTick");
+		//console.log("onTick");
 			    
 		let cmds = this.strategy.run(this);
 
@@ -302,7 +406,7 @@ class PlayEngine extends BaseEngine {
 			let idx = parseInt(aux[1]);
 			let sprite = source_objects[idx];
 
-			if (aux[2] === "m") {					
+			if (aux[2] === "m") {
 		    	let tx = sprite.x + parseInt(aux[3]);
 		    	let ty = sprite.y + parseInt(aux[4]);
 		    	sprite.target_x = tx;
@@ -310,7 +414,7 @@ class PlayEngine extends BaseEngine {
 		    	var vx = Math.sign(tx - sprite.x) * 0.1;
 		    	var vy = Math.sign(ty - sprite.y) * 0.1;
 		    	sprite.vx = vx;
-		    	sprite.vy = vy;			    	
+		    	sprite.vy = vy;
 		    	//console.log("parsing m cmd: ", idx, tx, ty, vx, vy);
 			}
 		}
@@ -324,7 +428,7 @@ class PlayEngine extends BaseEngine {
 				sprite.y += sprite.vy;
 			}
 
-			let hitWall = contain(sprite, this.opt.play);
+			let hitWall = contain(sprite, this.opt.bloodmap);
 	    	if (hitWall) {
 	    		sprite.vx = 0;
 	    		sprite.vy = 0;
@@ -341,7 +445,7 @@ class PlayEngine extends BaseEngine {
 				sprite.y += (this.eat_mode ? 3 : 1) * sprite.vy;
 			}
 
-			let hitWall = contain(sprite, this.opt.play);
+			let hitWall = contain(sprite, this.opt.bloodmap);
 	    	if (hitWall) {
 	    		sprite.vx = 0;
 	    		sprite.vy = 0;
@@ -431,13 +535,30 @@ class PlayEngine extends BaseEngine {
 	}
 
 	setScore(player, score) {
-		for (let i = 0; i < this.opt.max_score; i++) {
+		for (let i = 0; i < this.opt.scorebar.score.max; i++) {
 			this.scores[player].children[i].visible = i < score;
 		}
 	}
 
-	setCard(player, card_index) {
+	showCard(player, card_index) {
+		let n = this.decks[player].children.length;
+		//console.log("showCard", n);
+		for (let i = 0; i < n; i++) {
+			//console.log(i, i == card_index);
+			this.decks[player].children[i].visible = i == card_index;
+		}
+	}
 
+	setEpitopo(text) {
+		this.epitopo_text.text = text;
+	}
+
+	setStatus(text) {
+		this.status_text.text = text;
+	}
+
+	setHelp(text) {
+		this.help_text.text = text;	
 	}
 
 }

@@ -16,19 +16,63 @@
   <script src="assets/js/utils.js"></script>
   <script src="assets/js/engine.js"></script>
   <script src="assets/js/strategy.js"></script>
+  <script src="assets/js/data.js"></script>
 	<script src="assets/js/game.js"></script>
 
   <script type="text/javascript">
     let gameOptions = {
+      debug: false,
       width: 800, 
       height: 600,
-      play: {
+      bloodmap: {
         x: 0, 
         y: 0, 
         width: 800, 
-        height: 600 
+        height: 400,
+        bgcolor: 0x660000,
+        cells: {
+          imuno: {
+            count: 6,
+            alpha: 0.75
+          },
+          bacteria: {
+            count: 20,
+          },
+          blood: {
+            count: 40,
+          }
+        },
       },
-      max_score: 3,
+      scorebar: {
+        width: 250,
+        score: {
+          width: 32,
+          max: 3,
+        },
+        player1: {
+          name: "ALGORITMO",
+        },
+        player2: {
+          name: "JOGADOR",
+        }
+      },
+      bottom: {
+        height: 200,
+        width: 800,
+        textStyle: {
+          fontSize: 16,
+          fill: "#ffffff",
+          align: "center"
+        },
+        deck: {
+          width: 200,
+          card: {
+            width: 115,
+            height: 175
+          },
+        },
+      },
+      scoring_timeout: 2000,
       resources: {
         bacteria: [
           //"assets/img/bac_frame.png",
@@ -55,8 +99,8 @@
         ],
         deck: [
           "assets/img/back.png",
-          "assets/img/card_sick.png",
           "assets/img/card_good.png",
+          "assets/img/card_sick.png",
         ],
         score: [
           "assets/img/ponto.png"
@@ -66,7 +110,8 @@
 
     var gameWindow = window; //window.open();
     let strategy = new PlayStrategy();
-  	let game = new PlayEngine(gameWindow.document.body, strategy, gameOptions);    
+    let data = new PlayDataAdapter();
+  	let game = new PlayEngine(gameWindow.document.body, strategy, data, gameOptions);    
   	game.mainLoop();
   </script>
 </body>
