@@ -306,10 +306,12 @@ class PlayEngine extends BaseEngine {
 		} else {
 			this.setHelp("Não houve resposta imunológica!");
 		}
-		setTimeout(this.enter_score_round_state.bind(this), this.opt.scoring_timeout);
+		//setTimeout(this.enter_score_round_state.bind(this), this.opt.scoring_timeout);
 	}
 
 	enter_score_round_state() {
+		this.state = "end-round-score-state";
+
 		var player1 = false;
 		var player2 = false;
 		console.log(this);
@@ -344,7 +346,7 @@ class PlayEngine extends BaseEngine {
 		} else {
 			this.setHelp("Ninguém marcou ponto!");
 		}
-		setTimeout(this.enter_start_round_state.bind(this), this.opt.scoring_timeout);		
+		//setTimeout(this.enter_start_round_state.bind(this), this.opt.scoring_timeout);		
 	}
 
 	onKeyDown(event) {
@@ -368,11 +370,15 @@ class PlayEngine extends BaseEngine {
 					this.selectedCard["player2"] = this.opt.resources.deck.length - 1;
 				}
 				this.showCard("player2", this.selectedCard["player2"]);
-			} else if (event.code == "Enter") {
+			} else if (event.code === "Enter") {
 				this.enter_end_round_state();
 			}
 			//console.log("key", this.selectedCard)
-		}		
+		} else if (this.state === "end-round-state" && event.code === "Enter") {
+			this.enter_score_round_state();
+		} else if (this.state === "end-round-score-state" && event.code === "Enter") {
+			this.enter_start_round_state();
+		}
 	}
 
 	onTick(delta) {
