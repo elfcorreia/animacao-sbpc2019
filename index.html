@@ -45,6 +45,16 @@
       },
       scorebar: {
         width: 250,
+        textStyle: {
+          fontSize: 18,
+          fill: '#ffffff',
+          stroke: '#4a1850',
+          strokeThickness: 2,
+          dropShadow: true,
+          dropShadowColor: '#000000',
+          dropShadowBlur: 2,
+          dropShadowDistance: 1,
+        },
         score: {
           width: 32,
           max: 3,
@@ -82,12 +92,12 @@
           fill: ['#ffffff', '#00ff99'], // gradient
           align: "center",
           stroke: '#4a1850',
-          strokeThickness: 5,
+          strokeThickness: 2,
           dropShadow: true,
           dropShadowColor: '#000000',
-          dropShadowBlur: 4,
-          dropShadowAngle: Math.PI / 6,
-          dropShadowDistance: 6,
+          dropShadowBlur: 2,
+          //dropShadowAngle: Math.PI / 6,
+          dropShadowDistance: 1,
         }
       },
       scoring_timeout: 2000,

@@ -127,10 +127,7 @@ class PlayEngine extends BaseEngine {
 		let PLAYER_NAME_TOP_PADDING = 8;
 		let score_texture = this.opt.resources["score"][0];
 
-		let textStyle = new PIXI.TextStyle({
-			fontSize: 18,
-			fill: "#ffffff"
-		});
+		let textStyle = new PIXI.TextStyle(this.opt.scorebar.textStyle);
 
 		// player1 scorebar
 		let player1_scorebar = new PIXI.Container();
