@@ -371,31 +371,31 @@ class PlayEngine extends BaseEngine {
 	onKeyDown(event) {
 		console.log("onKeyDown", this, event);
 
-		if (event.code == "Escape") {
+		if (event.key == "Escape") {
 			this.enter_new_game_state();
 			return;
 		}
 
 		if (this.state == "select-card") {
-			if (event.code === "ArrowRight") {
+			if (event.key === "ArrowRight") {
 				this.selectedCard["player2"] += 1;
 				if (this.selectedCard["player2"] >= this.opt.resources.deck.length) {
 					this.selectedCard["player2"] = 1;
 				}
 				this.showCard("player2", this.selectedCard["player2"]);
-			} else if (event.code === "ArrowLeft") {
+			} else if (event.key === "ArrowLeft") {
 				this.selectedCard["player2"] -= 1;
 				if (this.selectedCard["player2"] <= 0) {
 					this.selectedCard["player2"] = this.opt.resources.deck.length - 1;
 				}
 				this.showCard("player2", this.selectedCard["player2"]);
-			} else if (event.code === "Enter") {
+			} else if (event.key === "Enter") {
 				this.enter_end_round_state();
 			}
 			//console.log("key", this.selectedCard)
-		} else if (this.state === "end-round-state" && event.code === "Enter") {
+		} else if (this.state === "end-round-state" && event.key === "Enter") {
 			this.enter_score_round_state();
-		} else if (this.state === "end-round-score-state" && event.code === "Enter") {
+		} else if (this.state === "end-round-score-state" && event.key === "Enter") {
 			this.enter_start_round_state();
 		}
 	}
