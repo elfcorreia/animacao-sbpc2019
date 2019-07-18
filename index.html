@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8">
   <title>Epitope prediction game</title>  
+  <style>
+    * { margin: 0; }
+  </style>
 </head>
   
 <body>
@@ -19,16 +22,21 @@
   <script src="assets/js/data.js"></script>
 	<script src="assets/js/game.js"></script>
 
-  <script type="text/javascript">
+  <script type="text/javascript">    
+    let aspectRatio = window.screen.height / window.screen.width;
+    let w = 1000;
+    let h = w*aspectRatio;
+
+    let bh = 200;
     let gameOptions = {
       debug: false,
-      width: 800, 
-      height: 600,
+      width: w,//800, 
+      height: h,//600,
       bloodmap: {
         x: 0, 
         y: 0, 
-        width: 800, 
-        height: 400,
+        width: w, 
+        height: h - bh,
         bgcolor: 0x660000,
         cells: {
           imuno: {
@@ -44,9 +52,9 @@
         },
       },
       scorebar: {
-        width: 250,
+        width: 250,        
         textStyle: {
-          fontSize: 18,
+          fontSize: 20,
           fill: '#ffffff',
           stroke: '#4a1850',
           strokeThickness: 2,
@@ -55,20 +63,21 @@
           dropShadowBlur: 2,
           dropShadowDistance: 1,
         },
+        top_padding: 12,
         score: {
-          width: 32,
+          width: 24,
           max: 3,
         },
         player1: {
-          name: "ALGORITMO",
+          name: "Inteligência Artificial",
         },
         player2: {
-          name: "JOGADOR",
+          name: "Jogador",
         }
       },
       bottom: {
-        height: 200,
-        width: 800,
+        height: bh,
+        width: w,
         epitopo: {          
           dot: 7,
         },
@@ -136,11 +145,27 @@
       },
     };
 
-    var gameWindow = window; //window.open();
+
     let strategy = new PlayStrategy();
     let data = new PlayDataAdapter();
-  	let game = new PlayEngine(gameWindow.document.body, strategy, data, gameOptions);    
+  	let game = new PlayEngine(document.body, strategy, data, gameOptions);    
   	game.mainLoop();
+
+    function toggleFullScreen() {
+      if (!game.app.view.fullscreenElement) {
+        game.app.view.requestFullscreen();
+      } else {
+        if (game.app.view.exitFullscreen) {
+          game.app.view.exitFullscreen(); 
+        }
+      }
+    }
+
+    document.addEventListener("keydown", function(e) {
+      if (e.key == "f") {
+        toggleFullScreen();
+      }
+    }, false);
   </script>
 </body>
 </html>

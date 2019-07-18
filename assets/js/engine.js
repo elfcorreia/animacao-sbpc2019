@@ -12,8 +12,9 @@ class BaseEngine {
 	    //app.renderer.view.style.position = "absolute";
 		//app.renderer.view.style.display = "block";
 		this.app.renderer.autoDensity = true;
-		this.app.renderer.resize(this.opt.width, this.opt.height);	
+		this.app.renderer.resize(this.opt.width, this.opt.height);
 	    el.appendChild(this.app.view);
+	    this.app.view.requestFullscreen();
 	}
 
 	mainLoop() {
@@ -123,8 +124,7 @@ class PlayEngine extends BaseEngine {
 
 	setupScoreBar() {
 		this.scores = {};
-
-		let PLAYER_NAME_TOP_PADDING = 8;
+		
 		let score_texture = this.opt.resources["score"][0];
 
 		let textStyle = new PIXI.TextStyle(this.opt.scorebar.textStyle);
@@ -137,7 +137,7 @@ class PlayEngine extends BaseEngine {
 		
 		let player1_name = new PIXI.Text(this.opt.scorebar.player1.name, textStyle);
 		player1_name.x = player1_icon.x + player1_icon.width;
-		player1_name.y = PLAYER_NAME_TOP_PADDING;
+		player1_name.y = this.opt.scorebar.top_padding;
 		player1_scorebar.addChild(player1_name);
 		
 		this.scores["player1"] = new PIXI.Container();
@@ -151,6 +151,9 @@ class PlayEngine extends BaseEngine {
 		this.scores["player1"].y = player1_name.y + player1_name.height;
 		player1_scorebar.addChild(this.scores["player1"]);
 
+		this.status_text = new PIXI.Text("XXX", textStyle);
+		this.status_text.y = this.opt.scorebar.top_padding;
+
 		// player2 scorebar
 		let player2_scorebar = new PIXI.Container();
 		let texture2 = this.opt.resources["players"][1];
@@ -160,7 +163,7 @@ class PlayEngine extends BaseEngine {
 		
 		let player2_name = new PIXI.Text(this.opt.scorebar.player2.name, textStyle);
 		player2_name.x = this.opt.scorebar.width - player2_icon.width - player2_name.width;
-		player2_name.y = PLAYER_NAME_TOP_PADDING;
+		player2_name.y = this.opt.scorebar.top_padding;
 		player2_scorebar.addChild(player2_name);
 		
 		this.scores["player2"] = new PIXI.Container();
@@ -176,6 +179,7 @@ class PlayEngine extends BaseEngine {
 		player2_scorebar.x = this.opt.bloodmap.width - this.opt.scorebar.width;			
 		
 		this.app.stage.addChild(player1_scorebar);
+		this.app.stage.addChild(this.status_text);
 		this.app.stage.addChild(player2_scorebar);
 	}
 
@@ -212,15 +216,10 @@ class PlayEngine extends BaseEngine {
 			this.decks["player2"].addChild(sprite);
 		}
 		this.decks["player2"].x = this.opt.bottom.width - this.opt.bottom.deck.width;
-		group.addChild(this.decks["player2"]);
-
-		this.status_text = new PIXI.Text("TURNO 1", textStyle);
-		this.status_text.x = (this.opt.bottom.width / 2) - (this.status_text.width / 2);
-		group.addChild(this.status_text);		
+		group.addChild(this.decks["player2"]);		
 
 		this.epitopo_text = new PIXI.Text("XXXXXXXXX", textStyle);
-		this.epitopo_text.x = (this.opt.bottom.width / 2) - (this.epitopo_text.width / 2);
-		this.epitopo_text.y = this.status_text.y + this.status_text.height;
+		this.epitopo_text.x = (this.opt.bottom.width / 2) - (this.epitopo_text.width / 2);		
 		group.addChild(this.epitopo_text);
 
 		this.epitopo_canvas = new PIXI.Graphics();
@@ -356,13 +355,28 @@ class PlayEngine extends BaseEngine {
 		if (player1 && player2) {
 			this.setHelp("Ambos acertaram!");
 		} else if (player1 && !player2) {
-			this.setHelp("Algoritmo marcou ponto!");
+			this.setHelp(this.opt.scorebar.player1.name + " marcou ponto!");
 		} else if (!player1 && player2) {
-			this.setHelp("Você marcou ponto!");
+			this.setHelp(this.opt.scorebar.player2.name + " marcou ponto!");
 		} else {
 			this.setHelp("Ninguém marcou ponto!");
 		}
 		//setTimeout(this.enter_start_round_state.bind(this), this.opt.scoring_timeout);		
+	}
+
+	enter_player1_win_state() {
+		this.state = "end-game-state";
+		this.setHelp(this.opt.scorebar.player1.name + " venceu!");
+	}
+
+	enter_player2_win_state() {
+		this.state = "end-game-state";
+		this.setHelp(this.opt.scorebar.player2.name + " venceu!");
+	}
+
+	enter_empate_state() {
+		this.state = "end-game-state";
+		this.setHelp("Empate!");
 	}
 
 	onKeyDown(event) {
@@ -393,7 +407,15 @@ class PlayEngine extends BaseEngine {
 		} else if (this.state === "end-round-state" && event.key === "Enter") {
 			this.enter_score_round_state();
 		} else if (this.state === "end-round-score-state" && event.key === "Enter") {
-			this.enter_start_round_state();
+			if (this.player1_score === this.opt.scorebar.score.max && this.player2_score === this.opt.scorebar.score.max) {
+				this.enter_empate_state();
+			} else if (this.player1_score === this.opt.scorebar.score.max) {
+				this.enter_player1_win_state();
+			} else if (this.player2_score === this.opt.scorebar.score.max) {
+				this.enter_player2_win_state();
+			} else {
+				this.enter_start_round_state();
+			}
 		}
 	}
 
@@ -569,7 +591,7 @@ class PlayEngine extends BaseEngine {
 
 	setEpitopo(text) {
 		this.epitopo_text.text = text;
-		let colormap = long_rainbow; //gray_colormap;
+		let colormap = gray_colormap;//long_rainbow; //gray_colormap;
 		for (let i in text) {
 			let row = pam70[pam70Keys.indexOf(text[i])];
 			for (let j = 0; j < 20; j++) {
@@ -584,6 +606,7 @@ class PlayEngine extends BaseEngine {
 
 	setStatus(text) {
 		this.status_text.text = text;
+		this.status_text.x = (this.opt.bloodmap.width / 2) - (this.status_text.width / 2);
 	}
 
 	setHelp(text) {
