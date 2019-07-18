@@ -215,12 +215,7 @@ class PlayEngine extends BaseEngine {
 
 		this.status_text = new PIXI.Text("TURNO 1", textStyle);
 		this.status_text.x = (this.opt.bottom.width / 2) - (this.status_text.width / 2);
-		group.addChild(this.status_text);
-
-		this.help_text = new PIXI.Text("Ajuda", textStyle);
-		this.help_text.x = (this.opt.bottom.width / 2) - (this.status_text.width / 2);
-		this.help_text.y = this.opt.bottom.height - this.help_text.height;
-		group.addChild(this.help_text);
+		group.addChild(this.status_text);		
 
 		this.epitopo_text = new PIXI.Text("XXXXXXXXX", textStyle);
 		this.epitopo_text.x = (this.opt.bottom.width / 2) - (this.epitopo_text.width / 2);
@@ -231,10 +226,22 @@ class PlayEngine extends BaseEngine {
 		this.app.stage.addChild(group);
 	}
 
+	setupHelpText() {
+		let textStyle = new PIXI.TextStyle(this.opt.help.textStyle);
+		this.help_text = new PIXI.Text("Ajuda", textStyle);
+		this.help_text.x = (this.opt.bloodmap.width / 2) - (this.help_text.width / 2);		
+		this.help_text.y = (this.opt.bloodmap.height / 2) - (this.help_text.height / 2);
+		//this.help_text.width = this.opt.bloodmap.width;
+		this.help_text.wordWrap = true;
+		this.help_text.wordWrapWidth = this.opt.bloodmap.width - 50;
+		this.app.stage.addChild(this.help_text);
+	}
+
 	onSetup() {
 		this.setupBloodMap();
 		this.setupScoreBar();
 		this.setupBottom();
+		this.setupHelpText();
 
 		this.enter_new_game_state();
 	}
@@ -560,7 +567,9 @@ class PlayEngine extends BaseEngine {
 	}
 
 	setHelp(text) {
-		this.help_text.text = text;	
+		this.help_text.text = text;
+		this.help_text.x = (this.opt.bloodmap.width / 2) - (this.help_text.width / 2);		
+		this.help_text.y = (this.opt.bloodmap.height / 2) - (this.help_text.height / 2);
 	}
 
 }
