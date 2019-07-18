@@ -221,7 +221,15 @@ class PlayEngine extends BaseEngine {
 		this.epitopo_text.x = (this.opt.bottom.width / 2) - (this.epitopo_text.width / 2);
 		this.epitopo_text.y = this.status_text.y + this.status_text.height;
 		group.addChild(this.epitopo_text);
-		
+
+		this.epitopo_canvas = new PIXI.Graphics();
+		let cw = this.opt.bottom.epitopo.dot * 9;
+		let ch = this.opt.bottom.epitopo.dot * 20;
+		this.epitopo_canvas.x = (this.opt.bottom.width / 2) - (cw / 2);
+		this.epitopo_canvas.y = (this.opt.bottom.height / 2) - (ch / 2);
+		this.epitopo_canvas.addChild(this.epitopo_canvas);
+		group.addChild(this.epitopo_canvas);
+
 		group.y = this.opt.height - this.opt.bottom.height;
 		this.app.stage.addChild(group);
 	}
@@ -560,6 +568,17 @@ class PlayEngine extends BaseEngine {
 
 	setEpitopo(text) {
 		this.epitopo_text.text = text;
+		let colormap = long_rainbow; //gray_colormap;
+		for (let i in text) {
+			let row = pam70[pam70Keys.indexOf(text[i])];
+			for (let j = 0; j < 20; j++) {
+				let c = colormap(row[j]);
+				//console.log(j*10, i*10, (c & 0xff0000) >> 16, (c & 0x00ff00) >> 16, c & 0x0000ff);
+				this.epitopo_canvas.beginFill(c);
+				this.epitopo_canvas.drawRect(i*this.opt.bottom.epitopo.dot, j*this.opt.bottom.epitopo.dot, this.opt.bottom.epitopo.dot, this.opt.bottom.epitopo.dot);
+				this.epitopo_canvas.endFill();
+			}
+		}
 	}
 
 	setStatus(text) {
