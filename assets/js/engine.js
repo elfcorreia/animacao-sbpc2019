@@ -199,15 +199,19 @@ class PlayEngine extends BaseEngine {
 			let sprite = new PIXI.Sprite(PIXI.loader.resources[this.opt.resources.deck[i]].texture);
 			sprite.width = this.opt.bottom.deck.card.width;
 			sprite.height = this.opt.bottom.deck.card.height;
+			sprite.x = (this.opt.bottom.deck.width / 2) - (sprite.width / 2);
+			sprite.y = (this.opt.bottom.deck.height / 2) - (sprite.height / 2);
 			this.decks["player1"].addChild(sprite);
-		}		
+		}				
 		group.addChild(this.decks["player1"]);
 
 		this.decks["player2"] = new PIXI.Container();
 		for (let i = 0; i < this.opt.resources.deck.length; i++) {
 			let sprite = new PIXI.Sprite(PIXI.loader.resources[this.opt.resources.deck[i]].texture);
 			sprite.width = this.opt.bottom.deck.card.width;
-			sprite.height = this.opt.bottom.deck.card.height;		
+			sprite.height = this.opt.bottom.deck.card.height;
+			sprite.x = (this.opt.bottom.deck.width / 2) - (sprite.width / 2);
+			sprite.y = (this.opt.bottom.deck.height / 2) - (sprite.height / 2);
 			this.decks["player2"].addChild(sprite);
 		}
 		this.decks["player2"].x = this.opt.bottom.width - this.opt.bottom.deck.width;
