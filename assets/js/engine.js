@@ -3,14 +3,10 @@ class BaseEngine {
 	constructor(el, opt) {
 		this.opt = opt;
 
-		console.log("initializing pixi...")
-		if (!PIXI.utils.isWebGLSupported()) {
-	      type = "canvas"
-	    }
-	    PIXI.utils.sayHello("WebGL")
+		PIXI.utils.sayHello(PIXI.utils.isWebGLSupported() ? "WebGL" : "canvas");
+
 	    this.app = new PIXI.Application({
 	    	antialias: true,
-	    	forceCanvas: true,    
 	    });
 	    //this.app.renderer.backgroundColor = 0x660000;
 	    //app.renderer.view.style.position = "absolute";
