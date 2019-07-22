@@ -10,7 +10,7 @@ class PlayDataAdapter {
 		}
 
 		this.ground_true = Math.random() < 0.5;
-		this.algorithm_choice = Math.random() < 0.9 ? this.ground_true : !this.ground_true;
+		this.algorithm_choice = Math.random() > 0.9 ? this.ground_true : !this.ground_true;
 		return epitope;
 	}
 
