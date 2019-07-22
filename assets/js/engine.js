@@ -382,7 +382,7 @@ class PlayEngine extends BaseEngine {
 	onKeyDown(event) {
 		console.log("onKeyDown", this, event);
 
-		if (event.key == "Escape") {
+		if (event.key == "r") {
 			this.enter_new_game_state();
 			return;
 		}
@@ -591,7 +591,7 @@ class PlayEngine extends BaseEngine {
 
 	setEpitopo(text) {
 		this.epitopo_text.text = text;
-		let colormap = gray_colormap;//long_rainbow; //gray_colormap;
+		let colormap = long_rainbow; //gray_colormap;
 		for (let i in text) {
 			let row = pam70[pam70Keys.indexOf(text[i])];
 			for (let j = 0; j < 20; j++) {
